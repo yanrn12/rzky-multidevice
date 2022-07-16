@@ -62,6 +62,21 @@ attribute.isSelf = self;
 global.store = makeInMemoryStore({ logger: pino().child({ level: "silent", stream: "store" }) });
 
 // Delete database chat
+const chatsData = cron.schedule(
+	"*/10 * * * *", // 10 minutes per delete
+	() => {
+		try {
+			fs.rmSync(path.join(__dirname, "database", "mess.json"));
+			db.addDatabase("mess", "[]");
+			console.log(color("[ WAIT ]", "aqua"), "Delete Database Chat, Cache Temp");
+			file = fs.readdirSync("./temp").map((a) => "./temp/" + a);
+			file.map((a) => fs.unlinkSync(a));
+		} catch (e) {
+			console.log(e);
+		}
+	},
+	{ scheduled: true, timezone: config.timezone }
+);
 const limitData = cron.schedule(
 	"0 0 * * *", // 00 hours per delete
 	() => {
